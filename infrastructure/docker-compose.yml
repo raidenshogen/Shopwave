@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  users-db:
+     image: postgres:15-alpine
+     container_name: shopwave-users-db
+     ports:
+       - "5433:5432"
+     environment:
+       POSTGRES_DB: users_db
+       POSTGRES_USER: admin
+       POSTGRES_PASSWORD: Imiko12?
+     volumes:
+       - users_db_data:/var/lib/postgresql/data
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: shopwave-mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+volumes:
+  users_db_data:
