@@ -35,14 +35,16 @@ public class AuthController {
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponse> refresh(
             @RequestHeader("Authorization") String refreshToken) {
+        String token = refreshToken.substring(7);
         return ResponseEntity.ok(
-                authService.refreshToken(refreshToken));
+                authService.refreshToken(token));
     }
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(
             @RequestHeader("Authorization") String refreshToken) {
-        authService.logout(refreshToken);
+        String token = refreshToken.substring(7);
+        authService.logout(token);
         return ResponseEntity.noContent().build();
     }
 
