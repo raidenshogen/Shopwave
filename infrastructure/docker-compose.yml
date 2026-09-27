@@ -20,27 +20,5 @@ services:
       - "1025:1025"
       - "8025:8025"
 
-  products-db:
-    image: postgres:15-alpine
-    container_name: shopwave-products-db
-    environment:
-      POSTGRES_DB: products_db
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: Imiko12?
-    ports:
-      - "5434:5432"
-    volumes:
-      - products_db_data:/var/lib/postgresql/data
-    redis:
-    image: redis:7-alpine
-    container_name: shopwave-redis
-    ports:
-      - "6379:6379"
-    command: redis-server --appendonly yes
-    volumes:
-      - redis_data:/data 
-
 volumes:
   users_db_data:
-  products_db_data:
-  redis_data:
