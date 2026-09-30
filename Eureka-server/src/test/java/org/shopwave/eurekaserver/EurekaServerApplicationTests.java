@@ -1,10 +1,10 @@
-package org.shopwave.userservice;
+package org.shopwave.eurekaserver;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest(classes = UserServiceApplication.class)
-class UserServiceApplicationTests {
+@SpringBootTest
+class EurekaServerApplicationTests {
 
     @Test
     void contextLoads() {

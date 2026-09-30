@@ -36,17 +36,28 @@ public class CartServiceImpl implements CartService {
     }
 
     private Cart getOrCreateCart(UUID userId) {
-        Cart cart = redisTemplate.opsForValue()
-                .get(cartKey(userId));
-        if (cart == null) {
-            cart = Cart.builder()
-                    .userId(userId)
-                    .items(new ArrayList<>())
-                    .discountAmount(BigDecimal.ZERO)
-                    .build();
+    String key = cartKey(userId);
+    
+    try {
+        Cart cart = redisTemplate.opsForValue().get(key);
+        if (cart != null) {
+            return cart;
         }
-        return cart;
+    } catch (Exception e) {
+        // Handles stale/corrupted cache during deployments
+        log.warn("Failed to deserialize cart for user: {}. " +
+                 "Clearing stale cache. Error: {}", 
+                 userId, e.getMessage());
+        redisTemplate.delete(key); // Clear corrupted entry
     }
+
+    // Build fresh cart
+    return Cart.builder()
+            .userId(userId)
+            .items(new ArrayList<>())
+            .discountAmount(BigDecimal.ZERO)
+            .build();
+}
 
     private void saveCart(Cart cart) {
         redisTemplate.opsForValue().set(

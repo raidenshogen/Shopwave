@@ -2,6 +2,8 @@ package org.shopwave.userservice.Services.Imp;
 import lombok.RequiredArgsConstructor;
 import org.shopwave.userservice.Services.EmailService;
 import org.springframework.beans.factory.annotation.Value;
+
+
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;

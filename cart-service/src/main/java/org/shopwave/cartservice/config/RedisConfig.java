@@ -1,6 +1,6 @@
 package org.shopwave.cartservice.config;
 
-
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -9,7 +9,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.*;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 public class RedisConfig {
@@ -18,21 +19,20 @@ public class RedisConfig {
     public RedisTemplate<String, Cart> redisTemplate(
             RedisConnectionFactory connectionFactory) {
 
-        RedisTemplate<String, Cart> template =
-                new RedisTemplate<>();
+        RedisTemplate<String, Cart> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-        template.setKeySerializer(
-                new StringRedisSerializer());
+        template.setKeySerializer(new StringRedisSerializer());
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
-        mapper.disable(
-                SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        // ADD THIS - safety net for schema evolution between deployments
+        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
         Jackson2JsonRedisSerializer<Cart> serializer =
-                new Jackson2JsonRedisSerializer<>(
-                        mapper, Cart.class);
+                new Jackson2JsonRedisSerializer<>(mapper, Cart.class);
 
         template.setValueSerializer(serializer);
         template.setHashValueSerializer(serializer);
