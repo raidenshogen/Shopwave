@@ -40,7 +40,74 @@ services:
     volumes:
       - redis_data:/data 
 
+  order-db:
+     image: postgres:15-alpine
+     container_name: shopwave-orders-db
+     environment:
+       POSTGRES_DB: orders_db
+       POSTGRES_USER: admin
+       POSTGRES_PASSWORD: Imiko12?
+     ports:
+       - "5435:5432" 
+     volumes:
+      - orders_db_data:/var/lib/postgresql/data
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: shopwave-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - shopwave-network
+
+  # Kafka broker
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: shopwave-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"      # External access (your machine)
+      - "29092:29092"    # Internal docker network access
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_HOST://kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"  # Auto-create topics (dev mode)
+    networks:
+      - shopwave-network
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  # Kafka UI (optional but helpful - web interface to see messages)
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: shopwave-kafka-ui
+    depends_on:
+      - kafka
+    ports:
+      - "8088:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    networks:
+      - shopwave-network
+
+networks:
+  shopwave-network:
+    driver: bridge 
+
 volumes:
   users_db_data:
   products_db_data:
   redis_data:
+  orders_db_data:
